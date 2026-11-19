@@ -75,11 +75,24 @@ web_modules/
 *.tfvars
 terraform.tfstate
 terraform.tfstate.backup
+!*.tfvars.example
+
+# Terraform — backend com credenciais reais (o .example é versionado)
+terraform/backend.tf
+
+# Terraform — diretório de plugins e binários gerados pelo terraform init
+.terraform/
+**/.terraform/
+# Lock file do provider — pode ser versionado intencionalmente; ignorado aqui por padrão
+# Se quiser versionar o lock file, remova a linha abaixo e faça: git add terraform/.terraform.lock.hcl
+.terraform.lock.hcl
 
 # Credenciais e chaves privadas
 *.pem
 *.key
 id_rsa
+id_ed25519
+id_ecdsa
 
 # Python / pytest artifacts
 __pycache__/
@@ -164,3 +177,7 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Credenciais AWS.
+.aws/credentials
+.aws/config

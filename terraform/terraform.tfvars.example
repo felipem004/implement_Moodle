@@ -1,0 +1,34 @@
+# =============================================================================
+# terraform.tfvars.example — Valores de exemplo para as variáveis do projeto
+#
+# INSTRUÇÕES:
+#   1. Copie este arquivo: cp terraform.tfvars.example terraform.tfvars
+#   2. Preencha os valores abaixo com os dados reais do seu ambiente
+#   3. NUNCA commite o terraform.tfvars — ele já está no .gitignore
+# =============================================================================
+
+# Região AWS (o AWS Learn Lab opera em us-east-1)
+aws_region = "us-east-1"
+
+# Prefixo para nomear os recursos AWS
+project_name = "moodle-challenge"
+
+# Tipo da instância EC2
+ec2_instance_type = "t3.medium"
+
+# Chave pública SSH para acessar a EC2
+# Gere com: ssh-keygen -t rsa -b 4096 -f ~/.ssh/moodle_key
+# Depois copie: cat ~/.ssh/moodle_key.pub
+# TODO: Substitua pelo conteúdo real da sua chave pública
+ec2_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQAB... seu-usuario@seu-host"
+
+# CIDR autorizado para SSH — restrinja ao seu IP em produção
+# Para descobrir seu IP: curl -s https://checkip.amazonaws.com
+# TODO: Substitua por seu IP (ex: "203.0.113.10/32") em vez de 0.0.0.0/0
+ssh_allowed_cidr = "0.0.0.0/0"
+
+# Credenciais do banco de dados RDS
+# TODO: Substitua pelos valores reais (use senha forte)
+db_name     = "moodle"
+db_username = "moodle"
+db_password = "MinhaSenhaForte#2024!"

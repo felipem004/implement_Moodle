@@ -1,0 +1,29 @@
+# =============================================================================
+# backend.tf.example — Configuração opcional de backend remoto (S3 + DynamoDB)
+#
+# INSTRUÇÕES:
+#   1. Copie este arquivo: cp backend.tf.example backend.tf
+#   2. Crie manualmente o bucket S3 e a tabela DynamoDB no console AWS
+#      (o Learn Lab pode não ter permissão para criá-los via Terraform)
+#   3. Preencha os valores abaixo e execute: terraform init -migrate-state
+#
+# Por que usar backend remoto?
+#   - O terraform.tfstate local pode conter senhas em texto — não commite!
+#   - Backend S3 garante que o estado fique fora do repositório
+#   - DynamoDB previne execuções concorrentes (state locking)
+#
+# ATENÇÃO: Não commite este arquivo após preencher com valores reais.
+#          O .gitignore já ignora backend.tf (apenas o .example é versionado).
+# =============================================================================
+
+# TODO: Descomente e preencha após criar os recursos no console AWS
+
+# terraform {
+#   backend "s3" {
+#     bucket         = "meu-bucket-terraform-state"   # TODO: nome do bucket S3
+#     key            = "moodle-challenge/terraform.tfstate"
+#     region         = "us-east-1"
+#     dynamodb_table = "terraform-state-lock"         # TODO: nome da tabela DynamoDB
+#     encrypt        = true
+#   }
+# }
