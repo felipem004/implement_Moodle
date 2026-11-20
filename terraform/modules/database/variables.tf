@@ -2,6 +2,8 @@
 # modules/database/variables.tf
 # =============================================================================
 
+# TODO: Adicione variáveis extras se precisar parametrizar engine_version ou allocated_storage.
+
 variable "project_name" {
   type        = string
   description = "Prefixo usado no nome dos recursos de banco de dados."

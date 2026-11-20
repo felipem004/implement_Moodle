@@ -2,6 +2,8 @@
 # modules/networking/outputs.tf
 # =============================================================================
 
+# TODO: Adicione outputs extras conforme necessário (ex: IDs individuais das subnets privadas).
+
 output "vpc_id" {
   description = "ID da VPC criada."
   value       = aws_vpc.main.id

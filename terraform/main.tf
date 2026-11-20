@@ -4,6 +4,9 @@
 # A ordem de dependência é: networking → database → compute.
 # =============================================================================
 
+# TODO: Ajuste os valores de vpc_cidr, subnets e ssh_allowed_cidr no terraform.tfvars
+# conforme a necessidade do seu ambiente antes de executar terraform apply.
+
 # -----------------------------------------------------------------------------
 # Módulo 1: networking
 # Cria a VPC, subnets, Internet Gateway, route table e security groups.
@@ -27,12 +30,12 @@ module "networking" {
 module "database" {
   source = "./modules/database"
 
-  project_name         = var.project_name
-  private_subnet_ids   = module.networking.private_subnet_ids
+  project_name          = var.project_name
+  private_subnet_ids    = module.networking.private_subnet_ids
   rds_security_group_id = module.networking.rds_security_group_id
-  db_name              = var.db_name
-  db_username          = var.db_username
-  db_password          = var.db_password
+  db_name               = var.db_name
+  db_username           = var.db_username
+  db_password           = var.db_password
 }
 
 # -----------------------------------------------------------------------------

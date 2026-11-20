@@ -8,6 +8,9 @@
 #   - Security Group restrito: 5432 apenas do SG da EC2
 # =============================================================================
 
+# TODO: Em produção, defina skip_final_snapshot = false e configure final_snapshot_identifier
+# para garantir backup antes de destruir o banco.
+
 # -----------------------------------------------------------------------------
 # Subnet Group do RDS
 # O aws_db_subnet_group exige ao menos 2 subnets em AZs distintas.

@@ -9,6 +9,8 @@
 #   └── Subnet privada  10.0.3.0/24 (us-east-1b) — RDS AZ-B (exigida pelo subnet group)
 # =============================================================================
 
+# TODO: Adicione tags extras nos recursos abaixo se necessário para identificação no console AWS.
+
 # -----------------------------------------------------------------------------
 # VPC principal
 # enable_dns_hostnames = true é necessário para que a EC2 receba DNS público.

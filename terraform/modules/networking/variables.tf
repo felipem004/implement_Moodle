@@ -2,6 +2,8 @@
 # modules/networking/variables.tf
 # =============================================================================
 
+# TODO: Adicione variáveis extras caso precise parametrizar CIDRs ou AZs diferentes.
+
 variable "project_name" {
   type        = string
   description = "Prefixo usado no nome de todos os recursos de rede."

@@ -8,6 +8,8 @@
 #   - AMI Amazon Linux 2023 buscada dinamicamente via data source
 # =============================================================================
 
+# TODO: Ajuste o user_data.sh se precisar instalar dependências adicionais na EC2.
+
 # -----------------------------------------------------------------------------
 # Key Pair — usa a chave pública fornecida via variável sensível
 # -----------------------------------------------------------------------------

@@ -2,6 +2,8 @@
 # modules/database/outputs.tf
 # =============================================================================
 
+# TODO: Adicione o output rds_db_name se precisar referenciá-lo em outros módulos.
+
 output "rds_endpoint" {
   description = "Endpoint do RDS PostgreSQL no formato host:porta. Usado pelo user_data.sh da EC2."
   value       = aws_db_instance.moodle.endpoint

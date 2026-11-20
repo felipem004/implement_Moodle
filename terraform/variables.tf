@@ -3,6 +3,9 @@
 # Os valores são fornecidos via terraform.tfvars (ignorado pelo Git).
 # =============================================================================
 
+# TODO: Revise e ajuste os valores padrão das variáveis conforme necessário,
+# especialmente ssh_allowed_cidr (restrinja ao seu IP em produção).
+
 variable "aws_region" {
   type        = string
   default     = "us-east-1"

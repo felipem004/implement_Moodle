@@ -2,6 +2,8 @@
 # outputs.tf — Outputs raiz expostos após o terraform apply
 # =============================================================================
 
+# TODO: Adicione outputs extras conforme necessário (ex: ec2_public_ip, rds_address).
+
 output "vpc_id" {
   description = "ID da VPC criada pelo módulo networking."
   value       = module.networking.vpc_id

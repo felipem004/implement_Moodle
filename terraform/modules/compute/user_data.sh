@@ -51,7 +51,7 @@ mkdir -p /home/ec2-user/.docker/cli-plugins
 # Baixa o binário do Docker Compose v2 (versão compatível com Amazon Linux 2023)
 COMPOSE_VERSION="v2.27.1"
 curl -fsSL \
-  "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
+  "https://github.com/docker/compose/releases/download/$${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
   -o /usr/local/lib/docker/cli-plugins/docker-compose
 
 chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
@@ -135,4 +135,7 @@ docker compose up -d
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] docker compose up -d executado."
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] O Moodle pode levar 3-5 minutos para concluir a instalação."
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Acompanhe: docker compose logs -f moodle"
+# TODO: Adicione verificações extras de saúde do Moodle após o docker compose up -d,
+# por exemplo checar se a porta 80 está respondendo antes de encerrar o script.
+
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Configuração da instância EC2 concluída."

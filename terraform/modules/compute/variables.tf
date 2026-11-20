@@ -2,6 +2,8 @@
 # modules/compute/variables.tf
 # =============================================================================
 
+# TODO: Adicione variáveis extras se precisar parametrizar o tipo de instância ou AMI.
+
 variable "project_name" {
   type        = string
   description = "Prefixo usado no nome dos recursos de compute."
