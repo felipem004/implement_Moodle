@@ -28,7 +28,7 @@ resource "aws_key_pair" "moodle" {
 # O LabRole é pré-existente na conta Academy e deve ser referenciado assim.
 # -----------------------------------------------------------------------------
 data "aws_iam_instance_profile" "lab_role" {
-  name = "LabRole"
+  name = "LabInstanceProfile"
 }
 
 # -----------------------------------------------------------------------------

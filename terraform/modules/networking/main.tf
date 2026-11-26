@@ -115,7 +115,7 @@ resource "aws_security_group" "ec2" {
 
   # HTTP público — Moodle precisa ser acessível pela Internet
   ingress {
-    description = "HTTP público para o Moodle"
+    description = "HTTP publico para o Moodle"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -172,7 +172,6 @@ resource "aws_security_group" "rds" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
   tags = {
     Name = "${var.project_name}-rds-sg"
   }
