@@ -51,7 +51,7 @@ module "compute" {
   ec2_security_group_id = module.networking.ec2_security_group_id
   ec2_instance_type     = var.ec2_instance_type
   ec2_public_key        = var.ec2_public_key
-  rds_endpoint          = module.database.rds_endpoint
+  rds_endpoint          = module.database.rds_address
   rds_port              = module.database.rds_port
   db_name               = var.db_name
   db_username           = var.db_username

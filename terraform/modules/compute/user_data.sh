@@ -3,10 +3,10 @@
 # user_data.sh — Script de inicialização da EC2 (Amazon Linux 2023)
 #
 # Executado automaticamente no primeiro boot da instância pelo cloud-init.
-# Instala o Docker, configura o ambiente Moodle e sobe os contêineres.
+# Instala o Docker, faz o build da imagem Moodle e sobe os contêineres.
 #
 # Variáveis injetadas pelo templatefile() do Terraform:
-#   ${db_host}     — endpoint do RDS PostgreSQL (host:porta)
+#   ${db_host}     — hostname do RDS PostgreSQL (sem porta)
 #   ${db_port}     — porta do RDS
 #   ${db_name}     — nome do banco de dados
 #   ${db_username} — usuário do banco
@@ -26,116 +26,139 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] Atualizando pacotes do sistema..."
 dnf update -y
 
 # =============================================================================
-# 2. Instalar o Docker Engine (via repositório oficial no Amazon Linux 2023)
+# 2. Instalar o Docker Engine
 # =============================================================================
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Instalando Docker..."
 dnf install -y docker
 
-# Habilita e inicia o serviço Docker
 systemctl enable --now docker
-
-# Adiciona o usuário ec2-user ao grupo docker para operações sem sudo
 usermod -aG docker ec2-user
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Docker instalado: $(docker --version)"
 
 # =============================================================================
-# 3. Instalar o Docker Compose v2 como plugin Docker
+# 3. Instalar o Docker Compose v2 como plugin
 # =============================================================================
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Instalando Docker Compose v2..."
 
-# Cria o diretório de plugins do Docker para o usuário root e ec2-user
-mkdir -p /usr/local/lib/docker/cli-plugins
-mkdir -p /home/ec2-user/.docker/cli-plugins
-
-# Baixa o binário do Docker Compose v2 (versão compatível com Amazon Linux 2023)
 COMPOSE_VERSION="v2.27.1"
+mkdir -p /usr/local/lib/docker/cli-plugins
+
 curl -fsSL \
   "https://github.com/docker/compose/releases/download/$${COMPOSE_VERSION}/docker-compose-linux-x86_64" \
   -o /usr/local/lib/docker/cli-plugins/docker-compose
 
 chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-# Cria symlink global para que 'docker compose' funcione para todos os usuários
-ln -sf /usr/local/lib/docker/cli-plugins/docker-compose \
-       /home/ec2-user/.docker/cli-plugins/docker-compose
-
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Docker Compose instalado: $(docker compose version)"
 
 # =============================================================================
-# 4. Preparar o diretório da aplicação Moodle
+# 4. Preparar o diretório da aplicação
 # =============================================================================
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Configurando diretório da aplicação..."
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Preparando diretório da aplicação..."
 
 APP_DIR="/opt/moodle"
 mkdir -p "$APP_DIR"
 
 # =============================================================================
-# 5. Criar o docker-compose.yml para a EC2
-# Usa a imagem Docker Hub do Bitnami Moodle (não requer build local na EC2)
-# O RDS externo é referenciado via variáveis de ambiente.
+# 5. Criar o Dockerfile (mesmo usado no ambiente local do projeto)
+# =============================================================================
+cat > "$APP_DIR/Dockerfile" << 'DOCKERFILE_EOF'
+FROM php:8.1-apache
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config libonig-dev libzip-dev libicu-dev libpq-dev \
+    libpng-dev libjpeg-dev libsodium-dev libxml2-dev \
+    libcurl4-openssl-dev curl unzip git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-configure gd --with-jpeg
+
+RUN docker-php-ext-install \
+    mbstring curl zip simplexml intl pdo_pgsql gd opcache sodium
+
+RUN { \
+    echo 'opcache.enable=1'; \
+    echo 'opcache.memory_consumption=256'; \
+    echo 'opcache.max_accelerated_files=10000'; \
+} > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+RUN { \
+    echo 'max_input_vars=5000'; \
+    echo 'post_max_size=128M'; \
+    echo 'upload_max_filesize=128M'; \
+    echo 'memory_limit=256M'; \
+    echo 'max_execution_time=300'; \
+} > /usr/local/etc/php/conf.d/moodle-recommended.ini
+
+RUN curl -fsSL \
+    "https://download.moodle.org/download.php/direct/stable401/moodle-latest-401.tgz" \
+    -o /tmp/moodle.tgz \
+    && tar -xzf /tmp/moodle.tgz -C /tmp \
+    && cp -r /tmp/moodle/. /var/www/html/ \
+    && rm -rf /tmp/moodle.tgz /tmp/moodle \
+    && chown -R www-data:www-data /var/www/html
+
+RUN mkdir -p /var/moodledata \
+    && chown -R www-data:www-data /var/moodledata \
+    && chmod 0770 /var/moodledata \
+    && ln -s /var/moodledata /var/www/moodledata
+
+RUN a2enmod rewrite
+EXPOSE 80
+DOCKERFILE_EOF
+
+# =============================================================================
+# 6. Criar o docker-compose.yml usando build local
 # =============================================================================
 cat > "$APP_DIR/docker-compose.yml" << 'COMPOSE_EOF'
-# docker-compose.yml — Moodle na EC2 com RDS externo
-# Gerado automaticamente pelo user_data.sh no boot da instância.
-
 services:
   moodle:
-    image: bitnami/moodle:4.1
+    build:
+      context: /opt/moodle
+      dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "80:8080"
+      - "80:80"
     env_file:
-      - .env
+      - /opt/moodle/.env
     volumes:
-      - moodle_data:/bitnami/moodle
-      - moodle_sitedata:/bitnami/moodledata
+      - moodle_www:/var/www/html
+      - moodle_data:/var/moodledata
 
 volumes:
+  moodle_www:
   moodle_data:
-  moodle_sitedata:
 COMPOSE_EOF
 
 # =============================================================================
-# 6. Criar o arquivo .env com as variáveis de conexão ao RDS
-# As variáveis são injetadas pelo templatefile() do Terraform.
-# O arquivo .env NÃO é versionado no Git (.gitignore).
+# 7. Criar o .env com as credenciais do RDS
+# db_host já vem sem porta (apenas o hostname)
 # =============================================================================
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Criando arquivo .env com credenciais do RDS..."
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Criando arquivo .env..."
 
 cat > "$APP_DIR/.env" << ENV_EOF
-# Conexão com o RDS PostgreSQL externo (gerado pelo user_data.sh)
 MOODLE_DATABASE_TYPE=pgsql
 MOODLE_DATABASE_HOST=${db_host}
 MOODLE_DATABASE_PORT_NUMBER=${db_port}
 MOODLE_DATABASE_NAME=${db_name}
 MOODLE_DATABASE_USER=${db_username}
 MOODLE_DATABASE_PASSWORD=${db_password}
-
-# Usuário administrador inicial do Moodle
-MOODLE_USERNAME=admin
-MOODLE_PASSWORD=Admin@Moodle2024!
-MOODLE_SITE_NAME=Moodle Challenge AWS
-
-# Desabilita o banco local do Bitnami (usamos RDS externo)
-MOODLE_SKIP_BOOTSTRAP=no
 ENV_EOF
 
-# Restringe permissões do .env — só root pode ler (contém senha do banco)
 chmod 600 "$APP_DIR/.env"
 
 # =============================================================================
-# 7. Subir o Moodle com docker compose
+# 8. Build e inicialização do Moodle
+# O build leva ~5-10 minutos pois baixa o Moodle 4.1 (~60MB)
 # =============================================================================
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Subindo o Moodle com docker compose..."
-
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Fazendo build da imagem Moodle (aguarde ~10 min)..."
 cd "$APP_DIR"
+docker compose build
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Subindo o Moodle..."
 docker compose up -d
 
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] docker compose up -d executado."
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] O Moodle pode levar 3-5 minutos para concluir a instalação."
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Acompanhe: docker compose logs -f moodle"
-# TODO: Adicione verificações extras de saúde do Moodle após o docker compose up -d,
-# por exemplo checar se a porta 80 está respondendo antes de encerrar o script.
-
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Configuração da instância EC2 concluída."
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Moodle iniciado. Acesse: http://$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)"
+# TODO: Adicione verificações extras de saúde após o docker compose up -d se necessário.
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Configuração concluída."
