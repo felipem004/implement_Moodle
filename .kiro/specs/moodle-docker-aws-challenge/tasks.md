@@ -36,14 +36,14 @@
 
 ### 2.3 Configurar variáveis e planejar
 
-- [ ] 2.3.1 Copiar `terraform.tfvars.example` para `terraform.tfvars`
-- [ ] 2.3.2 Gerar chave SSH: `ssh-keygen -t rsa -b 4096 -f ~/.ssh/moodle_key`
-- [ ] 2.3.3 Preencher `terraform.tfvars` com valores reais (chave pública, credenciais do banco, IP para SSH)
-- [ ] 2.3.4 Executar `terraform plan` e revisar o plano (12 recursos esperados)
+- [x] 2.3.1 Copiar `terraform.tfvars.example` para `terraform.tfvars`
+- [x] 2.3.2 Gerar chave SSH: `ssh-keygen -t rsa -b 4096 -f ~/.ssh/moodle_key`
+- [x] 2.3.3 Preencher `terraform.tfvars` com valores reais (chave pública, credenciais do banco, IP para SSH)
+- [x] 2.3.4 Executar `terraform plan` e revisar o plano (13 recursos esperados) — corrigidos dois erros: nome do instance profile (`LabInstanceProfile`) e acentos nas descriptions dos SGs
 
 ### 2.4 Aplicar e validar na AWS
 
-- [ ] 2.4.1 Executar `terraform apply` e aguardar conclusão (anote o `ec2_public_dns` do output)
+- [x] 2.4.1 Executar `terraform apply` e aguardar conclusão (anote o `ec2_public_dns` do output)
 - [ ] 2.4.2 Aguardar 3-5 minutos para o `user_data.sh` concluir o boot da EC2
 - [ ] 2.4.3 Executar `./scripts/health-check.sh http://<EC2_DNS>` e confirmar `exit 0`
 - [ ] 2.4.4 Verificar no console AWS que todos os recursos foram criados (EC2, RDS, VPC, SGs)
